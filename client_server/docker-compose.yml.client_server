@@ -1,0 +1,74 @@
+
+# distributed algorithms, n.dulay, 19 jan 18
+# docker-compose.yml v1 for lab02 client-server, 5 clients
+
+version: "3.4"
+
+x-common:
+  &defaults
+    image: elixir:alpine
+    volumes:
+      - .:/project
+    working_dir: /project
+    networks:
+      - network
+
+networks:
+  network:
+    driver: bridge
+
+services:
+  system.localdomain:
+    container_name: system
+    command: > 
+      elixir --name system@system.localdomain --cookie pass 
+             -S mix run --no-halt -e ${MAIN} ${CLIENTS}
+    <<: *defaults
+
+  server0.localdomain:
+    container_name: server0
+    command: > 
+      elixir --name server0@server0.localdomain --cookie pass 
+             -S mix run --no-halt 
+    <<: *defaults
+
+  client0.localdomain:
+    container_name: client0
+    command: > 
+      elixir --name client0@client0.localdomain --cookie pass 
+             -S mix run --no-halt 
+    <<: *defaults
+
+  client1.localdomain:
+    container_name: client1
+    command: > 
+      elixir --name client1@client1.localdomain --cookie pass 
+             -S mix run --no-halt 
+    <<: *defaults
+
+  client2.localdomain:
+    container_name: client2
+    command: >
+      elixir --name client2@client2.localdomain --cookie pass 
+             -S mix run --no-halt 
+    <<: *defaults
+
+  client3.localdomain:
+    container_name: client3
+    command: >
+      elixir --name client3@client3.localdomain --cookie pass 
+             -S mix run --no-halt 
+    <<: *defaults
+
+  client4.localdomain:
+    container_name: client4
+    command: >
+      elixir --name client4@client4.localdomain --cookie pass 
+             -S mix run --no-halt 
+    <<: *defaults
+
+# MISC
+# - anchors only available in version 3.5, ditto x- services
+# - macvlan network driver also works
+# - tabs are a no-no, use spaces
+
