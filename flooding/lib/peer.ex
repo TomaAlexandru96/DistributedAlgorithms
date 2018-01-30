@@ -11,7 +11,12 @@ defmodule Peer do
       {:hello, msg} ->
         IO.puts "Peer #{DAC.self_string()} Messages seen = #{count + 1}"
         for peer <- peers do
-          send peer, {:hello, "From Peer"}
+          send peer, {:hello, "From Peer", DAC.self_string()}
+        end
+      {:hello, msg, parent} ->
+        IO.puts "Peer #{DAC.self_string()} Parent #{parent} Messages seen = #{count + 1}"
+        for peer <- peers do
+          send peer, {:hello, "From Peer", DAC.self_string()}
         end
     end
 
@@ -23,8 +28,8 @@ defmodule Peer do
 
   defp next_2(count) do
     receive do
-      {:hello, msg} ->
-        IO.puts "Peer #{DAC.self_string()} Messages seen = #{count + 1}"
+      {:hello, msg, parent} ->
+        IO.puts "Peer #{DAC.self_string()} Parent #{parent} Messages seen = #{count + 1}"
     end
 
     Process.sleep(1000)
