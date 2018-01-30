@@ -21,7 +21,7 @@ defmodule Flooding do
     send_peers(9, [7, 8], peers) # peer 9's neighbours are peers 7 and 8
 
     [p | ps] = peers
-    send p, {:hello, "From Flooding"}
+    send p, {:hello, "From Flooding", p}
   end
 
   def send_peers(index, peers, all) do
