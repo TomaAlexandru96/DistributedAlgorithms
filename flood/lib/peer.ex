@@ -6,16 +6,15 @@ defmodule Peer do
   end
 
   defp next(neighbours, count, id) do
-    parent =
+    {parent, pid} =
       receive do
         { :hello, parent, pid} ->
-          IO.puts "Parent #{parent} Peer #{id} Message seen = #{count+1})"
           for neighbour <- neighbours do
-            send neighbour, { :hello, id, self()}
+            send neighbour, { :hello, self(), id}
           end
-        pid
+        {parent, pid}
       end
-    Process.sleep(1000)
+
     for neighbour <- neighbours do
       if (neighbour == parent) do
         send neighbour, {:child, 1}
@@ -24,23 +23,29 @@ defmodule Peer do
       end
     end
 
-    children =length(for _ <- 1..length(neighbours) do
+    children =Enum.sum(for _ <- 1..length(neighbours) do
       receive do
         {:child, value} ->  + value;
       end
     end
     )
-    IO.puts "Peer #{id} Children #{inspect children}"
-  end
 
-  # defp next_did_receive_hello(count, id, parent) do
-  #   receive do
-  #     { :hello, pid} ->
-  #       IO.puts "Parent #{parent} Peer #{id} Message seen = #{count+1})"
-  # end
-  #
-  #
-  #   next_did_receive_hello(count+1, id, parent)
-  # end
+    sum =
+    if (children > 0) do
+        Enum.sum(for _ <- 0..children-1  do
+          receive do
+            {:sum, value} -> + value
+          end
+        end
+        )
+    else
+        0
+    end
+
+    send parent, {:sum, sum+id};
+
+
+
+  end
 
 end

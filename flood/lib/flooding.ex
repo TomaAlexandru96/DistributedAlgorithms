@@ -24,7 +24,10 @@ defmodule Flooding do
     bind(peers, 8, [7, 9])
     bind(peers, 9, [7, 8]) # peer 9's neighbours are peers 7 andx
 
-    send Enum.at(peers, 0), { :hello, "Generator", self() }
+    send Enum.at(peers, 0), { :hello, self(), "Generator" }
+    receive do
+      {:sum, value} -> IO.puts "#{value}"
+    end
   end
 
   defp bind(peers, peer, neighbours) do
