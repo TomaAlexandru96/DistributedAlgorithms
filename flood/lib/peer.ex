@@ -1,32 +1,46 @@
 defmodule Peer do
-  
-  def start do
+  def start(id) do
     receive do
-      { :neighbours, neighbours } -> next(neighbours, 0)
+      { :neighbours, neighbours} -> next(neighbours, 0, id)
     end
   end
 
-  defp next(neighbours, count) do
-    receive do
-      { :hello, message } -> 
-        IO.puts "Peer <#{DAC.pid_string(self())}> Message seen = #{count+1})"
-        for neighbour <- neighbours do
-          send neighbour, { :hello, message }
-        end
-    end
-
-    next_did_receive_hello(count+1)
-  end
-
-  defp next_did_receive_hello(count) do
-    receive do
-      { :hello, _ } -> 
-        IO.puts "Peer <#{DAC.pid_string(self())}> Message seen = #{count+1})"
-    end
-
+  defp next(neighbours, count, id) do
+    parent =
+      receive do
+        { :hello, parent, pid} ->
+          IO.puts "Parent #{parent} Peer #{id} Message seen = #{count+1})"
+          for neighbour <- neighbours do
+            send neighbour, { :hello, id, self()}
+          end
+        pid
+      end
     Process.sleep(1000)
+    for neighbour <- neighbours do
+      if (neighbour == parent) do
+        send neighbour, {:child, 1}
+      else
+        send neighbour, {:child, 0}
+      end
+    end
 
-    next_did_receive_hello(count+1)
+    children =length(for _ <- 1..length(neighbours) do
+      receive do
+        {:child, value} ->  + value;
+      end
+    end
+    )
+    IO.puts "Peer #{id} Children #{inspect children}"
   end
+
+  # defp next_did_receive_hello(count, id, parent) do
+  #   receive do
+  #     { :hello, pid} ->
+  #       IO.puts "Parent #{parent} Peer #{id} Message seen = #{count+1})"
+  # end
+  #
+  #
+  #   next_did_receive_hello(count+1, id, parent)
+  # end
 
 end
