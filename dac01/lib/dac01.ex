@@ -1,4 +1,4 @@
-# Alexandru Toma (ait15) and Andrei Isaila (..)
+# Alexandru Toma (ait15) and Andrei Isaila (ii515)
 
 defmodule Dac01 do
 
