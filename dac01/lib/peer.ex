@@ -35,19 +35,19 @@ defmodule Peer do
         {first, second} = Enum.at(state, i)
 
         if first < max_broadcasts do
-          send Enum.at(neighbours, i), {:send, peer_id}
+          state = List.replace_at(state, peer_id, {first + 1, second})
+          send Enum.at(neighbours, i), {:send, peer_id, state}
           end_broadcast(peer_id, state)
-          replace_list(state, i + 1, {first + 1, second})
         end
       end
 
       receive do
-       {:send, from} ->
-         {first, second} = Enum.at(state, from)
+       {:send, from, prevState} ->
+         {first, second} = Enum.at(prevState, from)
 
          if second < max_broadcasts do
+           state = List.replace_at(state, from, {first, second + 1})
            end_broadcast(peer_id, state)
-           replace_list(state, from + 1, {first, second + 1})
          end
       end
 
@@ -58,12 +58,6 @@ defmodule Peer do
   # prints the state of the peer
   defp end_broadcast(peer_id, state) do
     IO.puts "#{peer_id}: #{inspect(state)}"
-  end
-
-  # function that replaces an item in a list at index (1-indexed)
-  def replace_list(list, index, element) do
-    :lists.sublist(list, index-1) ++ [element] ++
-          :lists.sublist(list, index+1, length(list))
   end
 
 end
