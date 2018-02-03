@@ -3,7 +3,7 @@
 defmodule Dacw do
 
   def main() do
-    start_system1(false)
+    start_sys(System1, true)
   end
 
   # Local tests
@@ -79,25 +79,25 @@ defmodule Dacw do
   # container0                | 2: [{10626, 6648}, {10626, 6016}, {10626, 8733}, {10626, 5796}, {10626, 5109}, {10626, 0}, {10626, 0}, {10626, 0}, {10626, 0}, {10626, 0}]
   # container0                | 3: [{7225, 7377}, {7225, 7003}, {7225, 9550}, {7225, 6664}, {7225, 5717}, {7225, 0}, {7225, 0}, {7225, 0}, {7225, 0}, {7225, 0}]
   # container0                | 4: [{7446, 7912}, {7446, 6856}, {7446, 9147}, {7446, 7124}, {7446, 7446}, {7446, 0}, {7446, 0}, {7446, 0}, {7446, 0}, {7446, 0}]
-  defp start_system1(is_local) do
+  defp start_sys(system, is_local) do
     nr_of_peers = 5
     max_broadcasts = 1000
     timeout = 3000
-    spawn(System1, :start, [is_local, nr_of_peers, max_broadcasts, timeout])
+    spawn(system, :start, [is_local, nr_of_peers, max_broadcasts, timeout])
 
     Process.sleep(timeout)
 
     nr_of_peers = 5
     max_broadcasts = 10_000_000
     timeout = 3000
-    spawn(System1, :start, [is_local, nr_of_peers, max_broadcasts, timeout])
+    spawn(system, :start, [is_local, nr_of_peers, max_broadcasts, timeout])
 
     Process.sleep(timeout)
 
     nr_of_peers = 10
     max_broadcasts = 10_000_000
     timeout = 3000
-    spawn(System1, :start, [is_local, nr_of_peers, max_broadcasts, timeout])
+    spawn(system, :start, [is_local, nr_of_peers, max_broadcasts, timeout])
 
   end
 

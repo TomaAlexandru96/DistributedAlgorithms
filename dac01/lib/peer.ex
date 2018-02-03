@@ -1,6 +1,6 @@
 # Alexandru Toma (ait15) and Andrei Isaila (ii515)
 
-defmodule PeerSystem1 do
+defmodule Peer do
 
   def has_exceeded_timeout(timeout, start_time) do
     now = :os.system_time(:milli_seconds)
@@ -70,8 +70,8 @@ defmodule PeerSystem1 do
   defp start_broadcast(peer_id, neighbours, max_broadcasts, timeout, start_time) do
     send_state = for _ <- 0..length(neighbours)-1, do: 0
     receive_state = for _ <- 0..length(neighbours)-1, do: 0
-    spawn(PeerSystem1, :send_peer, [peer_id, neighbours, max_broadcasts, timeout, send_state, self(), start_time])
-    receiveP = spawn(PeerSystem1, :receive_peer, [peer_id, neighbours, max_broadcasts, timeout, receive_state, self(), start_time])
+    spawn(Peer, :send_peer, [peer_id, neighbours, max_broadcasts, timeout, send_state, self(), start_time])
+    receiveP = spawn(Peer, :receive_peer, [peer_id, neighbours, max_broadcasts, timeout, receive_state, self(), start_time])
 
     run_broadcast(peer_id, false, false, send_state, receive_state, receiveP)
   end
