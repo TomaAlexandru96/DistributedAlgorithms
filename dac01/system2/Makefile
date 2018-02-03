@@ -1,7 +1,7 @@
 # distributed algorithms, n.dulay, 18 jan 18
 # Makefile, v1
 
-MAIN     = System1.main
+MAIN     = System2.main
 
 PROJECT  = da347
 NETWORK  = $(PROJECT)_network
