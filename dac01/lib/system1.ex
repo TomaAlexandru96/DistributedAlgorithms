@@ -3,12 +3,11 @@
 defmodule System1 do
 
   def start(is_local, nr_of_peers, max_broadcasts, timeout) do
-    peers = for i <- 0..nr_of_peers-1 do
+    peers = for i <- 1..nr_of_peers do
       if is_local do
         spawn(PeerSystem1, :start, [i])
       else
-        IO.puts "TODO"
-        nil
+        Node.spawn(:'node#{i}@container#{i}.localdomain', PeerSystem1, :start, [i-1])
       end
     end
 

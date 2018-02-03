@@ -34,7 +34,7 @@ defmodule Dacw do
   # max_broadcasts = 10_000_000
   # timeout = 3000
   # Output:
-  g 18705}, {18636, 18635}, {18636, 13924}, {18636, 20476}, {18636, 18589}, {18636, 18250}, {18636, 12688}, {18636, 16539}, {18636, 11876}, {18636, 18228}]
+  # 18705}, {18636, 18635}, {18636, 13924}, {18636, 20476}, {18636, 18589}, {18636, 18250}, {18636, 12688}, {18636, 16539}, {18636, 11876}, {18636, 18228}]
   defp start_system1(is_local) do
     nr_of_peers = 5
     max_broadcasts = 1000
@@ -54,6 +54,7 @@ defmodule Dacw do
     max_broadcasts = 10_000_000
     timeout = 3000
     spawn(System1, :start, [is_local, nr_of_peers, max_broadcasts, timeout])
+
   end
 
 end
