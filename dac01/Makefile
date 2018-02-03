@@ -1,65 +1,8 @@
+COMPILE_AND_RUN_LOCAL  = make compile && make run
+COMPILE_AND_RUN_DOCKER = make compile && make up
 
-# distributed algorithms, n.dulay, 18 jan 18
-# Makefile, v1
+system1_local:
+	cd system1 && $(COMPILE_AND_RUN_LOCAL)
 
-PEERS    = 10
-MAIN     = Dacw.main
-MAIN_NET = Dacw.main_net
-
-PROJECT  = da347
-NETWORK  = $(PROJECT)_network
-
-LOCAL	 = mix run --no-halt -e $(MAIN) $(PEERS)
-COMPOSE  = docker-compose -p $(PROJECT)
-
-compile:
-	mix compile
-
-run:
-	$(LOCAL)
-
-clean:
-	mix clean
-
-build:
-	$(COMPOSE) build
-
-up:
-	MAIN=$(MAIN) $(COMPOSE) up
-
-down:
-	$(COMPOSE) down
-	make show
-
-show:
-	@echo ----------------------
-	@make ps
-	@echo ----------------------
-	@make network
-
-show2:
-	@echo ----------------------
-	@make ps2
-	@echo ----------------------
-	@make network
-
-ps:
-	docker ps -a --format 'table {{.Names}}\t{{.Image}}'
-
-ps2:
-	docker ps -a -s
-
-network net:
-	docker network ls
-
-inspect:
-	docker network inspect $(NETWORK)
-
-netrm:
-	docker network rm $(NETWORK)
-conrm:
-	docker rm $(ID)
-
-kill:
-	docker rm -f `docker ps -a -q`
-	docker network rm $(NETWORK)
+system1_docker: 
+	cd system1 && $(COMPILE_AND_RUN_DOCKER)
