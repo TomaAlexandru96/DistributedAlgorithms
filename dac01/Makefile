@@ -3,8 +3,8 @@
 # Makefile, v1
 
 PEERS    = 10
-MAIN     = Dac01.main
-MAIN_NET = Dac01.main_net
+MAIN     = Dacw.main
+MAIN_NET = Dacw.main_net
 
 PROJECT  = da347
 NETWORK  = $(PROJECT)_network

@@ -1,6 +1,6 @@
 # Alexandru Toma (ait15) and Andrei Isaila (ii515)
 
-defmodule Peer do
+defmodule PeerSystem1 do
 
   # send state [0, 0, 0, 0, 0]
   def send_peer(peer_id, neighbours, max_broadcasts, timeout, send_state, parent_process) do
@@ -60,8 +60,8 @@ defmodule Peer do
   defp start_broadcast(peer_id, neighbours, max_broadcasts, timeout) do
     send_state = for _ <- 0..length(neighbours)-1, do: 0
     receive_state = for _ <- 0..length(neighbours)-1, do: 0
-    sendP = spawn(Peer, :send_peer, [peer_id, neighbours, max_broadcasts, timeout, send_state, self()])
-    receiveP = spawn(Peer, :receive_peer, [peer_id, neighbours, max_broadcasts, timeout, receive_state, self()])
+    spawn(PeerSystem1, :send_peer, [peer_id, neighbours, max_broadcasts, timeout, send_state, self()])
+    receiveP = spawn(PeerSystem1, :receive_peer, [peer_id, neighbours, max_broadcasts, timeout, receive_state, self()])
 
     run_broadcast(peer_id, false, false, send_state, receive_state, receiveP)
   end
