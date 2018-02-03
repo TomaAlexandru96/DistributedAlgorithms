@@ -3,7 +3,7 @@
 defmodule Dacw do
 
   def main() do
-    start_sys(System1, true)
+    start_sys(System2, true)
   end
 
   # Local tests
