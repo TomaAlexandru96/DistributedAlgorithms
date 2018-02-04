@@ -20,15 +20,10 @@ defmodule App do
       send parent_process, {:stop_send, send_state}
     else
       new_state = for i <- 0..neighbours-1 do
-        should_send = Enum.at(send_state, i) < max_broadcasts
-        if should_send do
-          send parent_process, {:pl_send, i, {:send, peer_id}}
-          Enum.at(send_state, i) + 1
-        else
-          Enum.at(send_state, i)
-        end
+        Enum.at(send_state, i) + 1
       end
 
+      send parent_process, {:beb_broadcast, {:send, peer_id}}
       send_peer(peer_id, neighbours, max_broadcasts, timeout, new_state, parent_process, start_time)
     end
   end
@@ -53,31 +48,28 @@ defmodule App do
     end
   end
 
-  def start(peer_id, pl) do
-    send pl, {:bind_app_to_pl, self()}
+  def start(peer_id, beb, neighbours) do
     start_time = :os.system_time(:milli_seconds)
+    next(peer_id, neighbours, start_time, beb)
+  end
+
+  defp next(peer_id, neighbours, start_time, beb) do
     receive do
-      {:pl_deliver, {:bind_app, neighbours}} -> next(peer_id, neighbours, start_time, pl)
+      {:beb_deliver, {:broadcast_app, max_broadcasts, timeout}} ->
+        start_broadcast(peer_id, neighbours, max_broadcasts, timeout, start_time, beb)
     end
   end
 
-  defp next(peer_id, neighbours, start_time, pl) do
-    receive do
-      {:pl_deliver, {:broadcast_app, max_broadcasts, timeout}} ->
-        start_broadcast(peer_id, neighbours, max_broadcasts, timeout, start_time, pl)
-    end
-  end
-
-  defp start_broadcast(peer_id, neighbours, max_broadcasts, timeout, start_time, pl) do
+  defp start_broadcast(peer_id, neighbours, max_broadcasts, timeout, start_time, beb) do
     send_state = for _ <- 0..neighbours-1, do: 0
     receive_state = for _ <- 0..neighbours-1, do: 0
     spawn(App, :send_peer, [peer_id, neighbours, max_broadcasts, timeout, send_state, self(), start_time])
     receiveP = spawn(App, :receive_peer, [peer_id, neighbours, max_broadcasts, timeout, receive_state, self(), start_time])
 
-    run_broadcast(peer_id, false, false, send_state, receive_state, receiveP, pl)
+    run_broadcast(peer_id, false, false, send_state, receive_state, receiveP, beb)
   end
 
-  defp run_broadcast(peer_id, send_stopped, receive_stopped, send_state, receive_state, receiveP, pl) do
+  defp run_broadcast(peer_id, send_stopped, receive_stopped, send_state, receive_state, receiveP, beb) do
     if send_stopped and receive_stopped do
       end_broadcast(peer_id, Enum.zip(send_state, receive_state))
     else
@@ -86,16 +78,16 @@ defmodule App do
           {true, receive_stopped, state, receive_state}
         {:stop_receive, state} ->
           {send_stopped, true, send_state, state}
-        {:pl_deliver, {:send, content}} ->
+        {:beb_deliver, {:send, content}} ->
           # redirect to receive process
           send receiveP, {:send, content}
           {send_stopped, receive_stopped, send_state, receive_state}
-        {:pl_send, i, {:send, peer_id}} ->
-          send pl, {:pl_send, i, {:send, peer_id}}
+        {:beb_broadcast, {:send, peer_id}} ->
+          send beb, {:beb_broadcast, {:send, peer_id}}
           {send_stopped, receive_stopped, send_state, receive_state}
       end
 
-      run_broadcast(peer_id, new_send_stopped, new_receive_stopped, new_send_state, new_receive_state, receiveP, pl)
+      run_broadcast(peer_id, new_send_stopped, new_receive_stopped, new_send_state, new_receive_state, receiveP, beb)
     end
   end
 

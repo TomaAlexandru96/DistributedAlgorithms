@@ -1,3 +1,5 @@
+# Alexandru Toma (ait15) and Andrei Isaila (ii515)
+
 defmodule Peer do
 
   def start(peer_id, system) do
