@@ -1,6 +1,6 @@
 # Alexandru Toma (ait15) and Andrei Isaila (ii515)
 
-defmodule System5 do
+defmodule System6 do
 
   def main() do
     send_percentage = 100
