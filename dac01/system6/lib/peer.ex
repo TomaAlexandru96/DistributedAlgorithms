@@ -5,7 +5,7 @@ defmodule Peer do
   def start(peer_id, system, neighbours, send_percentage) do
     lpl = spawn(Lpl, :start, [peer_id, send_percentage])
     beb = spawn(Beb, :start, [neighbours])
-    erb = spawn(Erb, :start, [neighbours])
+    erb = spawn(Erb, :start, [])
     app = spawn(App, :start, [peer_id, erb, neighbours, self()])
 
     send system, {:lpl_bind, peer_id, lpl}

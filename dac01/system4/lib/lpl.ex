@@ -20,12 +20,7 @@ defmodule Lpl do
         if get_should_send(send_percentage) do
           send get(peer_index, peers_lpl), content
         end
-      {:broadcast_app, max_broadcasts, timeout} ->
-        redirect_to_beb(beb, {:broadcast_app, max_broadcasts, timeout})
-      any ->
-        if get_should_send(send_percentage) do
-          redirect_to_beb(beb, any)
-        end
+      any -> redirect_to_beb(beb, any)
     end
     next(beb, peer_id, peers_lpl, send_percentage)
   end

@@ -3,7 +3,7 @@
 defmodule System6 do
 
   def main() do
-    send_percentage = 100
+    send_percentage = 50
     start_test1(true, send_percentage)
   end
 
@@ -114,6 +114,7 @@ defmodule System6 do
       send lpl, {:bind, peers_lpl}
     end
 
+    # start broadcast
     for {peer_id, lpl} <- peers_lpl do
       send lpl, {:broadcast_app, max_broadcasts, timeout}
     end

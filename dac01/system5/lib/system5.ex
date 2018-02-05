@@ -3,7 +3,7 @@
 defmodule System5 do
 
   def main() do
-    send_percentage = 100
+    send_percentage = 50
     start_test1(true, send_percentage)
   end
 
