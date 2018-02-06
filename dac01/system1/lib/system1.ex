@@ -3,7 +3,7 @@
 defmodule System1 do
 
   def main() do
-    start_test1(true)
+    start_test3(true)
   end
 
   # Local tests

@@ -3,8 +3,8 @@
 defmodule System4 do
 
   def main() do
-    send_percentage = 50
-    start_test1(true, send_percentage)
+    send_percentage = 100
+    start_test3(true, send_percentage)
   end
 
   # Local tests
