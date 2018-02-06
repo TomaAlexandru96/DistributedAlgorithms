@@ -97,7 +97,7 @@ defmodule System1 do
     start(is_local, nr_of_peers, max_broadcasts, timeout)
   end
 
-  defp start(is_local, nr_of_peers, max_broadcasts, timeout) do
+  def start(is_local, nr_of_peers, max_broadcasts, timeout) do
     IO.puts "Starting #{if is_local do "local" else "on docker" end} with nr_of_peers: #{nr_of_peers}, max_broadcasts: #{max_broadcasts}, timeout: #{timeout}"
     IO.puts ""
 

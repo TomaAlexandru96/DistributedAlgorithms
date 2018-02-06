@@ -1,13 +1,15 @@
+#/bin/sh
 # distributed algorithms, n.dulay, 18 jan 18
 # Makefile, v1
-
+PEERS = 5
 MAIN     = System3.main
 
 PROJECT  = da347
 NETWORK  = $(PROJECT)_network
 
 LOCAL	 = mix run --no-halt -e $(MAIN)
-COMPOSE  = docker-compose -p $(PROJECT)
+COMPOSE5 = MAIN=$(MAIN)  docker-compose --file docker-compose-5.yml -p $(PROJECT)
+COMPOSE10 = MAIN=$(MAIN)  docker-compose --file docker-compose-10.yml -p $(PROJECT)
 
 compile:
 	mix compile
@@ -22,8 +24,11 @@ build:
 	$(COMPOSE) build
 
 up:
-	MAIN=$(MAIN) $(COMPOSE) up
-
+	@if [ "$(MAIN)"  = "Tests.test3_net" ]; then \
+		$(COMPOSE10) up ; \
+	else \
+		$(COMPOSE5) up ; \
+	fi
 down:
 	$(COMPOSE) down
 	make show
