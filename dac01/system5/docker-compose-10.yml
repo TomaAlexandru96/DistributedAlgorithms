@@ -20,7 +20,7 @@ services:
     container_name: container0
     command: >
       elixir --name node0@container0.localdomain --cookie pass
-             -S mix run --no-halt -e ${MAIN}
+             -S mix run --no-halt -e ${MAIN} ${PEERS} ${MAX} ${T} ${P}
     depends_on:
       - container1.localdomain
       - container2.localdomain
