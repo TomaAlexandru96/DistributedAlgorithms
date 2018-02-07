@@ -19,7 +19,7 @@ defmodule System6 do
   end
 
   defp start(is_local, nr_of_peers, max_broadcasts, timeout, send_percentage) do
-    IO.puts "Starting #{if is_local do "local" else "on docker" end} with nr_of_peers: #{nr_of_peers}, max_broadcasts: #{max_broadcasts}, timeout: #{timeout}"
+    IO.puts "Starting #{if is_local do "local" else "on docker" end} with nr_of_peers: #{nr_of_peers}, max_broadcasts: #{max_broadcasts}, timeout: #{timeout}, send_percentage: #{send_percentage}"
     IO.puts ""
 
     for i <- 1..nr_of_peers do

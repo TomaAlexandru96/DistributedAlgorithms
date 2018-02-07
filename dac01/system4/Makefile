@@ -1,3 +1,5 @@
+# Alexandru Toma (ait15) and Andrei Isaila (ii515)
+
 # distributed algorithms, n.dulay, 18 jan 18
 # Makefile, v1
 MAIN     = System4.main
@@ -10,7 +12,7 @@ P     = 100
 PROJECT  = da347
 NETWORK  = $(PROJECT)_network
 
-LOCAL	 = mix run --no-halt -e $(MAIN) $(PEERS) $(MAX) $(T)
+LOCAL	 = mix run --no-halt -e $(MAIN) $(PEERS) $(MAX) $(T) $(P)
 COMPOSE5 = MAIN=$(MAIN_NET) PEERS=$(PEERS) MAX=$(MAX) T=$(T) P=$(P) docker-compose --file docker-compose-5.yml -p $(PROJECT)
 COMPOSE10 = MAIN=$(MAIN_NET) PEERS=$(PEERS) MAX=$(MAX) T=$(T) P=$(P) docker-compose --file docker-compose-10.yml -p $(PROJECT)
 

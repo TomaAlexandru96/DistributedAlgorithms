@@ -1,4 +1,5 @@
-#/bin/sh
+# Alexandru Toma (ait15) and Andrei Isaila (ii515)
+
 # distributed algorithms, n.dulay, 18 jan 18
 # Makefile, v1
 MAIN     = System1.main
