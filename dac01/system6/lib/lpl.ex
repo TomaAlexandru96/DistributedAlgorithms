@@ -26,7 +26,7 @@ defmodule Lpl do
   end
 
   defp get_should_send(send_percentage) do
-    random = Enum.random(0..10000) / 10000
+    random = rand.uniform(10000) / 10000
     send_percentage / 100 >= random
   end
 
