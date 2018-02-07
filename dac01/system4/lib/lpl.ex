@@ -26,7 +26,8 @@ defmodule Lpl do
   end
 
   defp get_should_send(send_percentage) do
-    Enum.random(0..100) <= send_percentage
+    random = :rand.uniform(10000) / 100
+    random <= send_percentage
   end
 
   defp redirect_to_beb(beb, msg) do
