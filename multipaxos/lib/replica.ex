@@ -32,6 +32,41 @@ defmodule Replica do
     {state, slot_out}
   end
 
+  defp propose(state, leaders, slot_in, slot_out, requests, proposals, decisions) do
+    window = state[:config][:window]
+    if slot_in < slot_out + window and MapSet.size(requests) > 0 do
+      leaders = if decisions[slot_in - window] != nil do
+        {_, _, op} = decisions[slot_in - window]
+        leaders = if op == :reconfig do
+          # TODO: op.leaders
+          leaders
+        else
+          leaders
+        end
+        leaders
+      else
+        leaders
+      end
+
+      command = Enum.at(requests, 0)
+      {requests, proposals} = if decisions[slot_in] == nil do
+        requests = MapSet.delete(requests, command)
+        proposals = Map.put(proposals, slot_in, command)
+        Enum.map(leaders, fn(leader) ->
+          send leader, {:propose, slot_in, command}
+        end)
+        {requests, proposals}
+      else
+        {requests, proposals}
+      end
+
+      slot_in = slot_in + 1
+      propose(state, leaders, slot_in, slot_out, requests, proposals, decisions)
+    else
+      {leaders, requests, proposals, slot_in}
+    end
+  end
+
   defp propose_decision(state, slot_out, decisions, proposals, requests) do
     if decisions[slot_out] != nil do
 
@@ -60,10 +95,19 @@ defmodule Replica do
     receive do
       {:request, command} ->
         requests = MapSet.put(requests, command)
+        {leaders, requests, proposals, slot_in} =
+          propose(state, leaders, slot_in, slot_out, requests, proposals, decisions)
+
         next(state, leaders, slot_in, slot_out, requests, proposals, decisions)
+
       {:decision, slot, command} ->
         decisions = Map.put(decisions, slot, command)
-        {state, slot_out, decisions, proposals, requests} = propose_decision(state, slot_out, decisions, proposals, requests)
+        {state, slot_out, decisions, proposals, requests} =
+          propose_decision(state, slot_out, decisions, proposals, requests)
+        {leaders, requests, proposals, slot_in} =
+          propose(state, leaders, slot_in, slot_out, requests, proposals, decisions)
+
+        next(state, leaders, slot_in, slot_out, requests, proposals, decisions)
     end
   end
 end
