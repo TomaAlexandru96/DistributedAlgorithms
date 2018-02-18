@@ -1,5 +1,5 @@
 defmodule Acceptor do
-  @bottom {-1, -1}
+  @bottom {-1, self()}
 
   def start(config) do
     next(config, @bottom, MapSet.new)
