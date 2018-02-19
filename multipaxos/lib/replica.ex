@@ -12,7 +12,7 @@ defmodule Replica do
   end
 
   defp perform(state, {client, cid, op} = command, decisions, slot_out) do
-    # IO.puts inspect decisions
+    # If the operation has been perfomed before
     {slot_out, performed} = Enum.reduce(decisions, {slot_out, false}, fn({slot, {_, _, op0} = command0}, {slot_out, performed}) ->
       res = if ((slot < slot_out and command == command0) or op0 == :reconfig) and !performed do
         {slot_out + 1, true}
@@ -22,6 +22,7 @@ defmodule Replica do
       res
     end)
 
+    # If the operation has not been perfomed yet, perform it
     {state, slot_out} = if !performed do
       # TODO: look at leader change operation...
       send state[:database], {:execute, op}
@@ -41,28 +42,29 @@ defmodule Replica do
     window = state[:config][:window]
 
     if slot_in < slot_out + window and MapSet.size(requests) > 0 do
+      # Change set of leaders
 
-    # Change set of leaders
+      # leaders = if decisions[slot_in - window] != nil do
+      #   {_, _, op} = decisions[slot_in - window]
+      #   leaders = if op == :reconfig do
+      #     # TODO: op.leaders
+      #     leaders
+      #   else
+      #     leaders
+      #   end
+      #   leaders
+      # else
+      #   leaders
+      # end
 
-    #   leaders = if decisions[slot_in - window] != nil do
-    #     {_, _, op} = decisions[slot_in - window]
-    #     leaders = if op == :reconfig do
-    #       # TODO: op.leaders
-    #       leaders
-    #     else
-    #       leaders
-    #     end
-    #     leaders
-    #   else
-    #     leaders
-    #   end
-
+      # Maka a propsal for all unproposed commands in the window
       command = Enum.at(requests, 0)
       {requests, proposals} = if decisions[slot_in] == nil do
         requests = MapSet.delete(requests, command)
         proposals = Map.put(proposals, slot_in, command)
+
+        # The leaders need to decide on the proposals
         Enum.map(leaders, fn(leader) ->
-          # IO.puts inspect {slot_in, slot_out, command}
           send leader, {:propose, slot_in, command}
         end)
         {requests, proposals}
@@ -77,10 +79,12 @@ defmodule Replica do
     end
   end
 
-  defp propose_decision(state, slot_out, decisions, proposals, requests) do
+  defp handle_decisions(state, slot_out, decisions, proposals, requests) do
     if decisions[slot_out] != nil do
 
-      # if there is a decision in slot_out, update proposals and requests
+      # If the replica proposed a different command, we need renew
+      # the request in order in order for us to agree with the leader's
+      # decisions. The decisions should be eliminated from proposals.
       {proposals, requests} = if proposals[slot_out] != nil do
         requests = if proposals[slot_out] != decisions[slot_out] do
           MapSet.put(requests, proposals[slot_out])
@@ -93,9 +97,9 @@ defmodule Replica do
         {proposals, requests}
       end
 
-      # perform
+      # Perform the command
       {state, slot_out} = perform(state, decisions[slot_out], decisions, slot_out)
-      propose_decision(state, slot_out, decisions, proposals, requests)
+      handle_decisions(state, slot_out, decisions, proposals, requests)
     else
       {state, slot_out, decisions, proposals, requests}
     end
@@ -116,7 +120,7 @@ defmodule Replica do
       {:decision, slot, command} ->
         decisions = Map.put(decisions, slot, command)
         {state, slot_out, decisions, proposals, requests} =
-          propose_decision(state, slot_out, decisions, proposals, requests)
+          handle_decisions(state, slot_out, decisions, proposals, requests)
         {leaders, requests, proposals, slot_in} =
           propose(state, leaders, slot_in, slot_out, requests, proposals, decisions)
 
