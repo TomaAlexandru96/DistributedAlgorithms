@@ -12,17 +12,16 @@ defmodule Replica do
   end
 
   defp perform(state, {client, cid, op}, decisions, slot_out) do
-    prev_slot_out = slot_out
-    slot_out = Enum.reduce(decisions, slot_out, fn({slot, {_, _, op0}}, slot_out) ->
-      slot_out = if slot < slot_out or op0 == :reconfig do
-        slot_out + 1
+    {slot_out, found} = Enum.reduce(decisions, {slot_out, false}, fn({slot, {_, _, op0}}, {slot_out, found}) ->
+      res = if (slot < slot_out or op0 == :reconfig) and !found do
+        {slot_out + 1, true}
       else
-        slot_out
+        {slot_out, found}
       end
-      slot_out
+      res
     end)
 
-    {state, slot_out} = if slot_out == prev_slot_out do
+    {state, slot_out} = if !found do
       # TODO: look at leader change operation...
 
       send state[:database], {:execute, op}
@@ -63,6 +62,7 @@ defmodule Replica do
         requests = MapSet.delete(requests, command)
         proposals = Map.put(proposals, slot_in, command)
         Enum.map(leaders, fn(leader) ->
+          # IO.puts inspect {slot_in, slot_out, command}
           send leader, {:propose, slot_in, command}
         end)
         {requests, proposals}
@@ -104,6 +104,9 @@ defmodule Replica do
   def next(state, leaders, slot_in, slot_out, requests, proposals, decisions) do
     receive do
       {:client_request, command} ->
+        send state[:monitor], {:client_request, state[:config][:server_num]}
+
+        # IO.puts (inspect requests)
         requests = MapSet.put(requests, command)
         {leaders, requests, proposals, slot_in} =
           propose(state, leaders, slot_in, slot_out, requests, proposals, decisions)
