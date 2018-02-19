@@ -43,7 +43,7 @@ defmodule Leader do
         end))
 
         # proposals = proposals <| pmax(pvalues)
-        proposals = Enum.reduce(pvalues, pmax, fn({slot, command}, pmax) ->
+        proposals = Enum.reduce(proposals, pmax, fn({slot, command}, pmax) ->
           pmax = if pmax[slot] == nil do
             Map.put(pmax, slot, command)
           else

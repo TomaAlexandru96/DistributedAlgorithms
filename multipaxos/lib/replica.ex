@@ -22,10 +22,16 @@ defmodule Replica do
       slot_out
     end)
 
-    if slot_out == prev_slot_out do
-      # Update State...
-      IO.puts "Update state ples..."
+    {state, slot_out} = if slot_out == prev_slot_out do
+      # TODO: look at leader change operation...
 
+      send state[:database], {:execute, op}
+      slot_out = slot_out + 1
+
+      send client, {:reply, cid, :ok}
+
+      {state, slot_out}
+    else
       {state, slot_out}
     end
 
@@ -34,19 +40,23 @@ defmodule Replica do
 
   defp propose(state, leaders, slot_in, slot_out, requests, proposals, decisions) do
     window = state[:config][:window]
+
     if slot_in < slot_out + window and MapSet.size(requests) > 0 do
-      leaders = if decisions[slot_in - window] != nil do
-        {_, _, op} = decisions[slot_in - window]
-        leaders = if op == :reconfig do
-          # TODO: op.leaders
-          leaders
-        else
-          leaders
-        end
-        leaders
-      else
-        leaders
-      end
+
+    # Change set of leaders
+
+    #   leaders = if decisions[slot_in - window] != nil do
+    #     {_, _, op} = decisions[slot_in - window]
+    #     leaders = if op == :reconfig do
+    #       # TODO: op.leaders
+    #       leaders
+    #     else
+    #       leaders
+    #     end
+    #     leaders
+    #   else
+    #     leaders
+    #   end
 
       command = Enum.at(requests, 0)
       {requests, proposals} = if decisions[slot_in] == nil do
@@ -93,7 +103,7 @@ defmodule Replica do
 
   def next(state, leaders, slot_in, slot_out, requests, proposals, decisions) do
     receive do
-      {:request, command} ->
+      {:client_request, command} ->
         requests = MapSet.put(requests, command)
         {leaders, requests, proposals, slot_in} =
           propose(state, leaders, slot_in, slot_out, requests, proposals, decisions)
