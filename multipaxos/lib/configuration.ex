@@ -18,7 +18,7 @@ def version 1 do	# configuration 1
   print_after:  1_000,	# print transaction log summary every print_after msecs
 
   # add your own here
-  window: 5,
+  window: 10,
   }
 end
 

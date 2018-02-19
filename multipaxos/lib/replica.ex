@@ -41,7 +41,8 @@ defmodule Replica do
   defp propose(state, leaders, slot_in, slot_out, requests, proposals, decisions) do
     window = state[:config][:window]
 
-    if slot_in < slot_out + window and MapSet.size(requests) > 0 do
+    if MapSet.size(requests) > 0 do
+    # if slot_in < slot_out + window and MapSet.size(requests) > 0 do
       # Change set of leaders
 
       # leaders = if decisions[slot_in - window] != nil do

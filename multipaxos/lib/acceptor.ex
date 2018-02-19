@@ -6,6 +6,7 @@ defmodule Acceptor do
   end
 
   def next(config, ballot_num, accepted) do
+    # IO.puts inspect ballot_num
     receive do
       {:p1a, leader, ballot} ->
         ballot_num = if ballot > ballot_num do

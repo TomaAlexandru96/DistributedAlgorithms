@@ -64,8 +64,8 @@ defmodule Leader do
       {:preempted, {seq, leader}=ballot} ->
         if ballot > ballot_num do
           active = false
-          ballot_num = {seq + 1, leader}
-          spawn(Scout, :start, [leader, acceptors, ballot_num])
+          ballot_num = {seq + 1, self()}
+          spawn(Scout, :start, [self(), acceptors, ballot_num])
           next(config, acceptors, replicas, ballot_num, active, proposals)
         else
           next(config, acceptors, replicas, ballot_num, active, proposals)
