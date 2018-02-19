@@ -11,19 +11,19 @@ defmodule Replica do
     end
   end
 
-  defp perform(state, {client, cid, op}, decisions, slot_out) do
-    {slot_out, found} = Enum.reduce(decisions, {slot_out, false}, fn({slot, {_, _, op0}}, {slot_out, found}) ->
-      res = if (slot < slot_out or op0 == :reconfig) and !found do
+  defp perform(state, {client, cid, op} = command, decisions, slot_out) do
+    # IO.puts inspect decisions
+    {slot_out, performed} = Enum.reduce(decisions, {slot_out, false}, fn({slot, {_, _, op0} = command0}, {slot_out, performed}) ->
+      res = if ((slot < slot_out and command == command0) or op0 == :reconfig) and !performed do
         {slot_out + 1, true}
       else
-        {slot_out, found}
+        {slot_out, performed}
       end
       res
     end)
 
-    {state, slot_out} = if !found do
+    {state, slot_out} = if !performed do
       # TODO: look at leader change operation...
-
       send state[:database], {:execute, op}
       slot_out = slot_out + 1
 
