@@ -12,9 +12,9 @@ defmodule Replica do
   end
 
   defp perform(state, {client, cid, op} = command, decisions, slot_out) do
-    # If the operation has been perfomed before
-    {slot_out, performed} = Enum.reduce(decisions, {slot_out, false}, fn({slot, {_, _, op0} = command0}, {slot_out, performed}) ->
-      res = if ((slot < slot_out and command == command0) or op0 == :reconfig) and !performed do
+    # If the operation has been perfomed before, we don't redo it.
+    {slot_out, performed} = Enum.reduce(decisions, {slot_out, false}, fn({slot, command0}, {slot_out, performed}) ->
+      res = if slot < slot_out and command == command0 and !performed do
         {slot_out + 1, true}
       else
         {slot_out, performed}
@@ -22,48 +22,30 @@ defmodule Replica do
       res
     end)
 
-    # If the operation has not been perfomed yet, perform it
-    {state, slot_out} = if !performed do
-      # TODO: look at leader change operation...
+    # If the operation has not been perfomed yet, perform it.
+    slot_out = if !performed do
       send state[:database], {:execute, op}
-      slot_out = slot_out + 1
-
       send client, {:reply, cid, :ok}
 
-      {state, slot_out}
+      slot_out + 1
     else
-      {state, slot_out}
+      slot_out
     end
 
-    {state, slot_out}
+    slot_out
   end
 
   defp propose(state, leaders, slot_in, slot_out, requests, proposals, decisions) do
     window = state[:config][:window]
 
     if slot_in < slot_out + window and MapSet.size(requests) > 0 do
-      # Change set of leaders
-
-      # leaders = if decisions[slot_in - window] != nil do
-      #   {_, _, op} = decisions[slot_in - window]
-      #   leaders = if op == :reconfig do
-      #     # TODO: op.leaders
-      #     leaders
-      #   else
-      #     leaders
-      #   end
-      #   leaders
-      # else
-      #   leaders
-      # end
-
-      # Maka a propsal for all unproposed commands in the window
+      # Maka a propsal for all unproposed commands in the window.
       command = Enum.at(requests, 0)
       {requests, proposals} = if decisions[slot_in] == nil do
         requests = MapSet.delete(requests, command)
         proposals = Map.put(proposals, slot_in, command)
 
-        # The leaders need to decide on the proposals
+        # The leaders need to decide on the proposals.
         Enum.map(leaders, fn(leader) ->
           send leader, {:propose, slot_in, command}
         end)
@@ -72,6 +54,7 @@ defmodule Replica do
         {requests, proposals}
       end
 
+      # When a proposal has been made, move slot_in.
       slot_in = slot_in + 1
       propose(state, leaders, slot_in, slot_out, requests, proposals, decisions)
     else
@@ -97,8 +80,9 @@ defmodule Replica do
         {proposals, requests}
       end
 
-      # Perform the command
-      {state, slot_out} = perform(state, decisions[slot_out], decisions, slot_out)
+      # Perform the command. The WINDOW moves to the right, i.e. slot_out
+      # increases.
+      slot_out = perform(state, decisions[slot_out], decisions, slot_out)
       handle_decisions(state, slot_out, decisions, proposals, requests)
     else
       {state, slot_out, decisions, proposals, requests}
@@ -110,7 +94,8 @@ defmodule Replica do
       {:client_request, command} ->
         send state[:monitor], {:client_request, state[:config][:server_num]}
 
-        # IO.puts (inspect requests)
+        # When a client request arrives, put it in the request set and try to
+        # propose it. This ensures liveness for proposals.
         requests = MapSet.put(requests, command)
         {leaders, requests, proposals, slot_in} =
           propose(state, leaders, slot_in, slot_out, requests, proposals, decisions)
@@ -118,9 +103,14 @@ defmodule Replica do
         next(state, leaders, slot_in, slot_out, requests, proposals, decisions)
 
       {:decision, slot, command} ->
+        # When a decision was made, we need to execute the command to keep
+        # consistent states. The decided command might be exectued later.
         decisions = Map.put(decisions, slot, command)
         {state, slot_out, decisions, proposals, requests} =
           handle_decisions(state, slot_out, decisions, proposals, requests)
+
+        # Since a command might have been decied and proposals updated, we might
+        # try to propose a new pending request.
         {leaders, requests, proposals, slot_in} =
           propose(state, leaders, slot_in, slot_out, requests, proposals, decisions)
 
