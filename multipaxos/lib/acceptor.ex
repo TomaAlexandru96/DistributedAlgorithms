@@ -24,6 +24,10 @@ defmodule Acceptor do
         end
         send leader, {:p2b, self(), ballot_num}
         next(config, ballot_num, accepted)
+
+      {:ping, leader, timestamp} ->
+        send leader, {:pong, timestamp}
+        next(config, ballot_num, accepted)
     end
   end
 end
