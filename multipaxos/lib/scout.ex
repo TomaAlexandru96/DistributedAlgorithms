@@ -1,5 +1,7 @@
 defmodule Scout do
-  def start(leader, acceptors, ballot_num) do
+  def start(leader, config, monitor, acceptors, ballot_num) do
+    send monitor, {:scout, config[:server_num]}
+
     Enum.map(acceptors, fn(acc) ->
         send acc, {:p1a, self(), ballot_num}
       end)

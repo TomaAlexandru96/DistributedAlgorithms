@@ -1,5 +1,7 @@
 defmodule Commander do
-  def start(leader, acceptors, replicas, pvalue) do
+  def start(leader, config, monitor, acceptors, replicas, pvalue) do
+    send monitor, {:commander, config[:server_num]}
+
     Enum.map(acceptors, fn(acc) ->
         send acc, {:p2a, self(), pvalue}
       end)
