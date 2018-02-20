@@ -1,6 +1,7 @@
 defmodule Leader do
   @bottom {-1, self()}
   @measure_interval 1000
+  @max_preempts 3
 
   def start(config) do
     receive do
@@ -11,11 +12,11 @@ defmodule Leader do
         spawn(Scout, :start, [self(), acceptors, ballot_num])
 
         :timer.send_after(@measure_interval, self(), :measure_rtt)
-        next(config, acceptors, replicas, ballot_num, false, %{}, 0)
+        next(config, acceptors, replicas, ballot_num, false, %{}, 0, 0)
     end
   end
 
-  def next(config, acceptors, replicas, ballot_num, active, proposals, rtt) do
+  def next(config, acceptors, replicas, ballot_num, active, proposals, rtt, preempts) do
     receive do
       :measure_rtt ->
         Enum.map(acceptors, fn(acceptor) ->
@@ -33,8 +34,8 @@ defmodule Leader do
 
         rtt = rtt_sum / MapSet.size(acceptors)
         :timer.send_after(@measure_interval, self(), :measure_rtt)
-        
-        next(config, acceptors, replicas, ballot_num, active, proposals, rtt)
+
+        next(config, acceptors, replicas, ballot_num, active, proposals, rtt, preempts)
 
       {:propose, slot, command} ->
         if proposals[slot] == nil do
@@ -42,9 +43,9 @@ defmodule Leader do
             spawn(Commander, :start,
               [self(), acceptors, replicas, {ballot_num, slot, command}])
           end
-          next(config, acceptors, replicas, ballot_num, active, Map.put(proposals, slot, command), rtt)
+          next(config, acceptors, replicas, ballot_num, active, Map.put(proposals, slot, command), rtt, preempts)
         end
-        next(config, acceptors, replicas, ballot_num, active, proposals, rtt)
+        next(config, acceptors, replicas, ballot_num, active, proposals, rtt, preempts)
       {:adopted, ballot, pvalues} ->
         # get maxim ballot number to compute pmax(pvalues)
         bmax = Enum.reduce(pvalues, @bottom, fn(pvalue, bmax) ->
@@ -82,15 +83,20 @@ defmodule Leader do
 
         active = true
 
-        next(config, acceptors, replicas, ballot_num, active, proposals, rtt)
+        next(config, acceptors, replicas, ballot_num, active, proposals, rtt, 0)
       {:preempted, {seq, leader}=ballot} ->
         if ballot > ballot_num do
           active = false
           ballot_num = {seq + 1, self()}
           spawn(Scout, :start, [self(), acceptors, ballot_num])
-          next(config, acceptors, replicas, ballot_num, active, proposals, rtt)
+          next(config, acceptors, replicas, ballot_num, active, proposals, rtt, 0)
         else
-          next(config, acceptors, replicas, ballot_num, active, proposals, rtt)
+          if preempts >= @max_preempts do
+            :timer.sleep(Kernel.round(rtt + :rand.uniform() * rtt))
+            next(config, acceptors, replicas, ballot_num, active, proposals, rtt, 0)
+          else
+            next(config, acceptors, replicas, ballot_num, active, proposals, rtt, preempts + 1)
+          end
         end
     end
   end
