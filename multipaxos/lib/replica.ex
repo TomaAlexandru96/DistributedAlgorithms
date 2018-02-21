@@ -93,9 +93,6 @@ defmodule Replica do
 
   def next(state, leaders, slot_in, slot_out, requests, proposals, decisions) do
     receive do
-      :die ->
-        IO.puts "Replica failure."
-
       {:client_request, command} ->
         send state[:monitor], {:client_request, state[:config][:server_num]}
 

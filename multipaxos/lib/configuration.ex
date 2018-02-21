@@ -18,7 +18,6 @@ def version 1 do	# configuration 1
   print_after:  1_000,	# print transaction log summary every print_after msecs
   leader_failures: 0,   # number of leader failures to happen in the system
   acceptor_failures: 0, # number of acceptor failures to happen in the system
-  replica_failures: 0,  # number of replica failures to happen in the system
 
   # add your own here
   window: 5,
@@ -60,11 +59,6 @@ end
 def version 7 do # should work
  config = version 1
  Map.put config, :leader_failures, 6
-end
-
-def version 8 do # should work
- config = version 1
- Map.put config, :replica_failures, 6
 end
 
 end # module -----------------------
