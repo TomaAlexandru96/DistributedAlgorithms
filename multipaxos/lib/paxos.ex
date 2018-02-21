@@ -33,6 +33,26 @@ defp start config do
     DAC.node_spawn node_name, Client, :start, [config, c, replicas]
   end
 
+  :timer.sleep(2000)
+
+  # failures
+  if config.replica_failures > 0 do
+    for r <- 1 .. config.replica_failures do
+      send Enum.at(replicas, r - 1), :die
+    end
+  end
+
+  if config.acceptor_failures > 0 do
+    for a <- 1 .. config.acceptor_failures do
+      send Enum.at(acceptors, a - 1), :die
+    end
+  end
+
+  if config.leader_failures > 0 do
+    for l <- 1 .. config.leader_failures do
+      send Enum.at(leaders, l - 1), :die
+    end
+  end
 end # start
 
 end # Paxos

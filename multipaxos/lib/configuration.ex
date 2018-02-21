@@ -16,18 +16,55 @@ def version 1 do	# configuration 1
   max_amount:   1000,	# max amount moved between accounts
 
   print_after:  1_000,	# print transaction log summary every print_after msecs
+  leader_failures: 0,   # number of leader failures to happen in the system
+  acceptor_failures: 0, # number of acceptor failures to happen in the system
+  replica_failures: 0,  # number of replica failures to happen in the system
 
   # add your own here
   window: 5,
   }
 end
 
-def version 2 do	# same as version 1 with higher debug level
+def version 2 do
  config = version 1
- Map.put config, :debug_level, 1
+ Map.put config, :client_sleep, 2
+ Map.put config, :max_requests, 10_000
 end
 
-def version 3 do	# configuration 3
+def version 3 do
+ config = version 1
+ Map.put config, :client_sleep, 2
+ Map.put config, :window, 100
+ Map.put config, :max_requests, 10_000
+end
+
+def version 4 do
+ config = version 1
+ Map.put config, :client_sleep, 2
+ Map.put config, :window, 1000
+ Map.put config, :max_requests, 500
+end
+
+# All of these should be ran with 7 servers
+
+def version 5 do # should work
+ config = version 1
+ Map.put config, :acceptor_failures, 3
+end
+
+def version 6 do # should not work
+ config = version 1
+ Map.put config, :acceptor_failures, 4
+end
+
+def version 7 do # should work
+ config = version 1
+ Map.put config, :leader_failures, 6
+end
+
+def version 8 do # should work
+ config = version 1
+ Map.put config, :replica_failures, 6
 end
 
 end # module -----------------------

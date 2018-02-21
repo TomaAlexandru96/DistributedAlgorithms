@@ -20,6 +20,9 @@ defmodule Leader do
 
   def next(config, monitor, acceptors, replicas, ballot_num, active, proposals, rtt, preempts) do
     receive do
+      :die ->
+        IO.puts "Leader failure."
+
       # A mechanism to measure RTTs to establish random delays when sending
       # packets. The RTTs are a useful measure to be able to tell on what
       # range of times should the delays lie.
@@ -35,6 +38,8 @@ defmodule Leader do
             {:pong, timestamp} ->
               timestamp2 = :os.system_time(:milli_seconds)
               rtt_sum + timestamp2 - timestamp
+          after @measure_interval ->
+            rtt_sum + @measure_interval
           end
           rtt_sum
         end)
@@ -109,7 +114,7 @@ defmodule Leader do
           # we may be in a lack of progress situation. In such a case we choose to
           # itroduce random delays in the leaders to achieve different orderings.
           if preempts >= @max_preempts do
-            :timer.sleep(Kernel.round(2 * :rand.uniform() * rtt))
+            :timer.sleep(Kernel.round(MapSet.size(acceptors) * :rand.uniform() * rtt))
             next(config, monitor, acceptors, replicas, ballot_num, active, proposals, rtt, 0)
           else
             next(config, monitor, acceptors, replicas, ballot_num, active, proposals, rtt, preempts + 1)

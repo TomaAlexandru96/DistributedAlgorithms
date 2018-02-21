@@ -9,6 +9,9 @@ defmodule Acceptor do
 
   def next(config, ballot_num, accepted) do
     receive do
+      :die ->
+        IO.puts "Acceptor failure."
+
       # Phase 1a of the Synod protocol
       {:p1a, leader, ballot} ->
         ballot_num = if ballot > ballot_num do
