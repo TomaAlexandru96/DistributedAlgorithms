@@ -1,3 +1,5 @@
+# Alexandru Toma (ait15) and Alexandru Dan (ad5915)
+
 defmodule Leader do
   @bottom -1
   @measure_interval 1000

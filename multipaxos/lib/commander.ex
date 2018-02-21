@@ -1,3 +1,5 @@
+# Alexandru Toma (ait15) and Alexandru Dan (ad5915)
+
 defmodule Commander do
   def start(leader, config, monitor, acceptors, replicas, pvalue) do
     send monitor, {:commander, config[:server_num]}

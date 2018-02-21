@@ -1,4 +1,4 @@
-
+# Alexandru Toma (ait15) and Alexandru Dan (ad5915)
 # distributed algorithms, n.dulay, 25 jan 18
 # helper functions v2
 

@@ -1,3 +1,5 @@
+# Alexandru Toma (ait15) and Alexandru Dan (ad5915)
+
 defmodule Scout do
   def start(leader, config, monitor, acceptors, ballot_num) do
     # When the scout is created it starts the phase 1 of the Synod

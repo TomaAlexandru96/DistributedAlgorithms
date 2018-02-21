@@ -1,3 +1,5 @@
+# Alexandru Toma (ait15) and Alexandru Dan (ad5915)
+
 defmodule Replica do
   def start(config, database, monitor) do
     receive do

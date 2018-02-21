@@ -1,3 +1,5 @@
+# Alexandru Toma (ait15) and Alexandru Dan (ad5915)
+
 defmodule Acceptor do
   @bottom -1
 
